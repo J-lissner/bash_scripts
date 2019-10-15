@@ -1,8 +1,8 @@
 # Bash scripts
 
-Contains some bash scripts with convenient functions.  <\br>
-For each script there are appropriate examples given.
-Each script has a -h or --help option for an explanation of the script.
+Contains some bash scripts with convenient functions.   
+For each script there are appropriate examples given.  
+Each script has a -h or --help option for an explanation of the script.  
 
 So far implemented:
     - Various compilation methods for *.tex files
