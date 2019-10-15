@@ -1,6 +1,6 @@
 # Bash scripts
 
-Contains some bash scripts with convenient functions. 
+Contains some bash scripts with convenient functions.  <\br>
 For each script there are appropriate examples given.
 Each script has a -h or --help option for an explanation of the script.
 
