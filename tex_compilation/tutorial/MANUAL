@@ -1,0 +1,65 @@
+### Copy the commands into your terminal for the tutorial ############
+### It is assumed that you have added the scripts to your $PATH (in the .bashrc) and they can be simply executed
+### (for easier copy pasting, you can also paste the commented lines into your terminal, nothing will happen)
+
+### we have these tex files
+cat *tex
+
+### lets try to compile every file with xelatex. Note that you have to press enter through some errors
+xltx.sh
+###############
+### As you can see, calling the script tries to compile every tex file it finds
+### It does continue upon a failed compilation (a_plot.tex), and removes every debuggin file at the end
+### Every tex compilation script has the -k option, to keep the debugging files
+### Every tex compilation script tries to compile every *tex file it finds with no specified arguments
+### With specified arguments, every tex compilation script does only compile the given scripts.
+###############
+
+### you may look at some pdfs, though for further introduction they are deleted again
+rm *pdf
+
+### Compiling both 'document' files with xelatex:
+xltx.sh -k document*.tex
+
+#equivalent to #xltx.sh -k document1.tex document2.tex
+
+
+### Both files compiled and we have a bunch of additional files in our folder
+### cleaning up and removing these "debugging files"
+rm_textrail.sh
+
+### Now that we have a better overview, lets have a look at the compiled pdfs
+
+### Now we start over and compile document2.tex correctly
+rm *.pdf
+
+xebibtx.sh document2.tex
+ls *pdf
+evince document2.pdf &
+
+### note that all the debugging files have been automatically removed, and we only have compiled the specified file
+### which did work. Although we don't see the aux file anymore, the bib did successfully compile
+
+
+### now we compile the "a_plot" file
+gnup-pdf.sh -k a_plot.tex
+evince a_plot.pdf &
+
+### note that it first ran gnuplot that the eps file was created, then the tex file got successfully compiled
+### and with the -k option, the debugging files sticked around
+rm *eps
+rm a_plot.pdf
+
+###compiling it again with only the gnuplot file
+gnup-pdf.sh a_plot.gp
+evince a_plot.pdf &
+
+### and again, we see the correct pdf
+### If we run the gnup-pdf.sh file without any arguments, it also tries to compile the other two tex files, although they have no corresponding *gp file.
+
+### resetting the examples folder
+rm *pdf
+rm *eps
+rm_textrail.sh
+
+###For a short summary, read the lines 10-16

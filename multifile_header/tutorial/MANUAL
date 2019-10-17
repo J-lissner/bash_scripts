@@ -1,0 +1,83 @@
+#### Adding, replacing and removing multiple headers
+
+### We have this file we want to append headers to. If some accident happens with "file", you can always copy the backup
+chmod +x others/display_stuff
+cp others/backup file
+cat file
+
+### We will only be looking at one file, however the scripts are easily applied to multiple files, i.e.
+##    add_header.sh header file1 file2 file3
+## OR add_header.sh header files*
+
+### lets simply add a header to the start of file and save a backup
+add_header.sh -b header1 file
+./others/display_stuff
+rm *bak
+
+### with the -b option specified, it saved a backup which was unchanged.
+
+### Now we want the other header with the % commentstyle
+
+replace_header.sh header2 file
+./others/display_stuff
+
+### and now we want to add the same header again in a later line, just before the body of text starts (which is line 16)
+
+add_header.sh -l 16 header2 file
+./others/display_stuff
+
+
+### since we accidentially put it too many headers, we want to take them all out
+### note that our commentstyle is %%% -> -m option
+rm_headers.sh -m 2 file
+./others/display_stuff
+
+### Oh no, there is still a header in there but part of the file has been removed.
+### Luckliy we have the backup to recover the file
+
+recover_backup.sh *bak
+./others/display_stuff
+
+
+### Now you are hopefully sensitive of the script usage and your file layout.
+### The script thought that between (4) and (6) there was a header, so it was removed
+
+### Headers which are "hidden" behind some text (which classifies as a header but is none), can not be deleted with the given scripts
+
+###################################################################
+### For further elaboration and every detail of the script continue the tutorial
+
+### We start of by adding the header with %%%%
+cp others/backup file
+add_header.sh header2 file
+./others/display_stuff
+
+#### Now we want to replace it with the other header #####
+### Since we know what we are doing, we dont need a backup
+replace_header.sh -m -nb header1 file
+./others/display_stuff
+
+### Note that the -m option refers to the existing header, not the new one which is inserted
+### Lets add some few more headers at different lines
+add_header.sh -l 20 header1 file
+add_header.sh -l 12 header1 file
+./others/display_stuff
+
+### And now we dont need any headers anymore, so we delete all 3 of them (again without any backup)
+rm_headers.sh -nb 3 file
+./others/display_stuff
+
+### Note that the deletion of headers always saves a backup as default argument, and adding headers has no backup as default option.
+### This time we could delete headers behind the lines (4) and (6), because they were ignored due to the other comment style
+### If you just enter some headers at the start of the file, the scripts work pretty reliable. However, they are not entirely proof against user input
+### Another small example when the scripts lead to some unexpected behaviour
+
+add_header.sh -b header2 file
+add_header.sh -l 3 header2 file
+rm_headers.sh -nb -m 2 file
+./others/display_stuff
+
+### Note that some text of the header was left standing because they "merged". Hence we have a "corrupt file"
+### However we can recover our backup and everything is back to normal
+recover_backup.sh *bak
+./others/display_stuff

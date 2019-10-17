@@ -1,0 +1,12 @@
+### this is a small preamble (1)
+%%% which is over two lines and commented out (2)
+
+%%%%%% (4)
+THIS LINE WILL BE "accidentially" DELETED DURING THE TUTORIAL, SO YOU ARE SENSITIVE TO YOUR OWN FILES (5)
+%%%%%% (6)
+
+Now after some blank lines we will finally start the document (8)
+you might have recognized these numbers at the end (9)
+of each line, (10)
+this is for easier readability of what happened with the file (11)
+the number at the very end is the line number of the template file  (12)
