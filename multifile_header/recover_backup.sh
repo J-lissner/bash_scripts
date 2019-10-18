@@ -12,8 +12,14 @@ for args in "$@"; do
     esac
 done
 
-for file in "$@"; do
-    if [[ $file =~ .*\.bak$ ]]; then
+if [ -z "$1" ]; then
+    for file in *.bak; do
         rename -v -f -e s/.bak// $file
-    fi
-done
+    done
+else
+    for file in "$@"; do
+        if [[ $file =~ .*\.bak$ ]]; then
+            rename -v -f -e s/.bak// $file
+        fi
+    done
+fi

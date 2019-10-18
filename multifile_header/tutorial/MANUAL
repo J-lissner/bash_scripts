@@ -33,16 +33,18 @@ rm_headers.sh -m 2 file
 ./others/display_stuff
 
 ### Oh no, there is still a header in there but part of the file has been removed.
+### The script thought that between (4) and (6) there was a header, so it was removed
+### Now you are hopefully sensitive of the script usage and your file layout.
+### Headers which are "hidden" behind some text (which classifies as a header but is not one), can not be deleted with the given scripts
 ### Luckliy we have the backup to recover the file
 
-recover_backup.sh *bak
+recover_backup.sh 
 ./others/display_stuff
 
+### The recover_backup.sh function can be called without arguments, then every *.bak file will overwrite the current file.
+### Also, the function can be called with recover_backup.sh * (everything in the folder), which functions the same as no arguments
+### Note that recovering the backup does delete the current file, and there is no way to recover it.
 
-### Now you are hopefully sensitive of the script usage and your file layout.
-### The script thought that between (4) and (6) there was a header, so it was removed
-
-### Headers which are "hidden" behind some text (which classifies as a header but is none), can not be deleted with the given scripts
 
 ###################################################################
 ### For further elaboration and every detail of the script continue the tutorial
