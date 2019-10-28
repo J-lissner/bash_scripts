@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 export TEXINPUTS=.:.//.:$TEXINPUTS
+export TEXINPUTS=/scratch/lissner/lehre/WS_2019/data_processing/computer_lab/template/:$TEXINPUTS
 
 rm=true
 for args in "$@"; do

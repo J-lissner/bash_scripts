@@ -1,0 +1,35 @@
+import numpy as np
+
+x = np.arange(10)
+my_variable = x/2
+anotherone= x+1
+othevar=k
+y = np.mean(x, axis=1)
+for i = 2:5
+    a = 20
+    saudfuiah = 3
+    dsuifhsdauifhsdauifha =1
+    if i==5
+        my_other_var= function(x=2, y=4)
+        x = 3
+        medium='rare'
+    
+#NOTE That up until here, the script did everything as expected
+
+for i in range(20):
+    a = i
+    no_variable = n
+    
+    d = 20
+    slightly_long_var = 20581
+    variable_with_loooooong_name=np.mean(x, axis=0)
+other_stuff = np.random.rand(10,20)
+new_x = np.arange(start=1, stop=20)
+y = y+1
+y_2=2*y
+y_25 =5/y
+
+#the script is not yet able to recognize unindentation, hence the ugly format in line  26-30
+
+
+longest_variable_you_have_ever_seen_which_is_also_home_alone= 9001
