@@ -23,7 +23,8 @@ for args in "$@"; do
         echo "Skips identation for python like function calls containing '=' symbols, e.g. fun.call(arg=10) "
         echo "saves a backup for every file as file.bak, overwrites existing backups"
         echo 
-        echo "Current version works fine for python and matlab scripts (11.11.19)"
+        echo "Current version works fine for almost all python and matlab scripts (11.11.19)"
+        echo "Note that the version is still not perfect, it skips over '+=' instead of moving both"
         echo "NOTE, there will be another script released soon, which pads '=' symbols correclty"
         exit
     esac
@@ -44,8 +45,8 @@ fi
 ## commands which should be evaluated during the loops
 block_start='awk "NR>$line2 && /=/ && $negated_keywords { print NR; exit}" $file'
 block_end='awk "{ if( (NR>$line1) && (!/=/ || $keywords) ) { print NR; exit} }" $file'
-keywords='/^\s*for/ || /^\s*if/ || /^\s*while/ || /^\s*def/ '
-negated_keywords='!/^\s*for/ && !/^\s*if/ && !/^\s*while/ && !/^\s*def/ '
+keywords='/^\s*for/ || /^\s*if/ || /^\s*while/ || /^\s*def/ || /^\s*#/ || /^\s*\%/ '
+negated_keywords='!/^\s*for/ && !/^\s*if/ && !/^\s*while/ && !/^\s*def/ && !/^\s*#/ && !/^\s*\%/ '
 
 ## indentation level
 current_line='sed -n "$i s/\(\s*\).*/\1/p" $file'
@@ -56,8 +57,12 @@ find_column='sed -n "$i s/./&\\n/gp" $file | grep -nx -m 1  "=" | cut -d: -f1'
 pad_spaces='sed -i -e "$i s/=/$spaces=/" $file'
 pad='awk "BEGIN{\$$n_spaces=OFS=\" \";print}" '
 
-## skip python lines
-function_call='awk "NR==$i && /.*\(.*=/ && !/.*=.*\(/ { print NR; exit}" $file'
+## skip python like function calls
+function_call='awk "NR==$i && /.*\(.*=/ && !/^[^(]*=.*\(/ { print NR; exit}" $file'
+
+## skip incrementation etc
+increment='awk "{ if( (NR==$i) && (/\+=/ || $incr_keywords) ) { print NR; exit} }" $file'
+incr_keywords=' /\*=/ || /-=/ || /\/=/ '
 
 
 #preallocating
@@ -87,9 +92,17 @@ for file in $@; do
                     break
                 fi
 
-                skip=$( eval $function_call)
-                if [[ ! -z "$skip" ]] ; then
-                    skip_array+=($skip)
+                skip_fun=$( eval $function_call)
+                skip_incr=$( eval $increment)
+                if [[ ! -z "$skip_fun" ]] ; then
+                    skip_array+=($skip_fun)
+                    continue
+                fi
+                if [[ ! -z "$skip_incr" ]] ; then
+                    if [[ ! -z "$skip_fun" ]] && (( "$skip_incr" != "$skip_fun" )); then
+                        continue
+                    fi 
+                    skip_array+=($skip_incr)
                     continue
                 fi
                 column=$( eval $find_column )
