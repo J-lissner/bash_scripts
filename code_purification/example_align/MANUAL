@@ -1,27 +1,27 @@
 ### For the tutorial, copy this text into your terminal
 ### it is assumed you have put the script in your $PATH, such that it can be run without the ./ declaration
 
-cat -n "example_code"
+cat -n "example_code.py"
 echo "################ ORIGINAL FILE ###############"
 
 ### if we run the script we can directly see its effect
 
-align_code.sh example_code
-cat -n "example_code"
+align_code.sh example_code.py
+cat -n "example_code.py"
 
 ### The code is commented to make you aware of the scripts shortcomings
 
 ### the script does save a backup by default
 ### we can suppress the backup with the '-nb' option
-ls example_code.bak
-rm example_code.bak
-cp originals/example_code .
+ls example_code.py.bak
+rm example_code.py.bak
+cp originals/example_code.py .
 ### Set the files back to the original files
-align_code.sh -nb example_code
-ls example_code.bak
+align_code.sh -nb example_code.py
+ls example_code.py.bak
 ### no backup has been saved
 
 ### reset the tutorial to the original files
-rm example_code.bak
-cp originals/example_code .
+cp originals/example_code.py .
+
 

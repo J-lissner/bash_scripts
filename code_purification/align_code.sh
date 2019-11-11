@@ -1,12 +1,7 @@
 #!/bin/bash
 
-#default parameters
 backup=true
 
-if [ -z "$1" ]; then
-    echo "please specify file input"
-    exit
-fi
 # go through the user options
 for args in "$@"; do
     case "$1" in 
@@ -20,92 +15,106 @@ for args in "$@"; do
         echo 
         echo "options:"
         echo "  -nb --nobackup, don't save any backup"
+        echo "  -h  --help,     no need to explain, you're already here"
         echo
         echo "This script aligns every '=' sign of a 'block' to the same identation level by padding spaces"
-        echo "Every 'block' is marked by empty lines, or keywords like 'for', 'if', 'while', 'def'"
+        echo "Every 'block' is marked by empty lines, or keywords like 'for', 'if', 'while', 'def' or indentation"
         echo "For every line it has to indent, the file is overwritte, so the script might be slow for many lines"
+        echo "Skips identation for python like function calls containing '=' symbols, e.g. fun.call(arg=10) "
+        echo "saves a backup for every file as file.bak, overwrites existing backups"
         echo 
-        echo "NOTE, this is not the final version, unexpected behaviour on unindentation of statements without a blank line"
-        echo "NOTE, also unexpected behaviour on e.g. python function calls containing= without any variable assignment"
-        echo "This will be fixed in future releases (currently 28.10.19, first version)"
+        echo "Current version works fine for python and matlab scripts (11.11.19)"
         echo "NOTE, there will be another script released soon, which pads '=' symbols correclty"
         exit
     esac
 done
-##commands which should be evaluated during the loops
+if [ -z "$1" ]; then
+    echo "please specify file input"
+    exit
+fi
 
-# checking the size of the block and where the farthest '=' is located
-block_start='awk " NR>$line2 && /=/ && $negated_keywords {print NR; exit} " $file'
-block_end='awk "{ if( NR>$line1 && (!/=/ || $keyword_matches ) )  {print NR; exit} } " $file'
+if $backup; then
+    for file in $@; do
+        backup_name="$file.bak"
+        cp $file $backup_name
+    done
+fi
+    
+
+## commands which should be evaluated during the loops
+block_start='awk "NR>$line2 && /=/ && $negated_keywords { print NR; exit}" $file'
+block_end='awk "{ if( (NR>$line1) && (!/=/ || $keywords) ) { print NR; exit} }" $file'
+keywords='/^\s*for/ || /^\s*if/ || /^\s*while/ || /^\s*def/ '
+negated_keywords='!/^\s*for/ && !/^\s*if/ && !/^\s*while/ && !/^\s*def/ '
+
+## indentation level
+current_line='sed -n "$i s/\(\s*\).*/\1/p" $file'
+base_line='sed -n "$i s/\(\s*\).*/\1/p" $file'
+
+## padding with zeros
 find_column='sed -n "$i s/./&\\n/gp" $file | grep -nx -m 1  "=" | cut -d: -f1'
-
-# evaluating how many spaces it needs to pad
-save_backup='sed -i.bak -e "$i s/=/$spaces=/" $file'
 pad_spaces='sed -i -e "$i s/=/$spaces=/" $file'
 pad='awk "BEGIN{\$$n_spaces=OFS=\" \";print}" '
 
-# conditions for the block to respect keywords so they dont mess up the identation
-keyword_matches="/^\s*for/  || /^\s*while/  || /^\s*if/ || /^\s*def/ || /^\s*class/"
-negated_keywords="!/^\s*for/  && !/^\s*while/  && !/^\s*if/ && !/^\s*def/ && !/^\s*class/"
-
-# conditions on the identation level for the block to not mess up the design
-#identation_level='awk "NR==$line1 { match(\$0, /^ */); print RLENGTH }" $file ' #THIS ONE WORKS
-#unindent='awk "{if( NR>$line1 && $tmpvar!={match(\$0, /^ */);RLENGTH} ) {print NR; exit} }" $file '
-
-#TODO TODO TODO
-# ANOTHER SCRIPT WHICH PADS THE = SIGNS (only those which need padding (dont pad on keyword or bracket before '=') )
-# TERMINATE BLOCK UPON UNINDENTATION
+## skip python lines
+function_call='awk "NR==$i && /.*\(.*=/ && !/.*=.*\(/ { print NR; exit}" $file'
 
 
 #preallocating
-line2=$(( 0 ))
-
 for file in $@; do
+    line2=$(( 0 ))
     while true; do
         line1=$( eval $block_start  )
+        if [ -z "$line1" ]; then  #breaks if there are any blank lines at the end of file
+            break
+        fi
         line2=$( eval $block_end  )
         line2=$(( line2 -1)) 
 
         if (( "$line1" < "$line2" )); then 
-            #check which '=' is the most indented
+            skip_array=()
+            ## check which '=' is the most indented
+
             max_column=$(( 0 )) #might not be needed
+            ## current indentation level
+            indentation=$( eval $base_line)
+            base_level=${#indentation}
             for ((i=line1;i<=line2;i++)); do
+                indentation=$( eval $current_line)
+                level=${#indentation}
+                if (( "$level" != "$base_level")); then
+                    line2=$(( i-1 ))
+                    break
+                fi
+
+                skip=$( eval $function_call)
+                if [[ ! -z "$skip" ]] ; then
+                    skip_array+=($skip)
+                    continue
+                fi
                 column=$( eval $find_column )
                 if (("$column" > "$max_column")); then
                     max_column=$column
                 fi
             done
             # pad ever unindented '=' by enough spaces to match the last one
+            j=0
             for ((i=line1;i<=line2;i++)); do
+                if [[ ! -z "${skip_array[j]}" ]] && (( "$i" == "${skip_array[j]}" )); then
+                    j=$(( j+1 ))
+                    continue
+                fi
                 column=$( eval $find_column )
                 n_spaces=$(( max_column - column ))
                 spaces=$( eval $pad  )
                 if (( "$column" < "$max_column" )); then
-                    if $backup; then
-                        backup=false
-                        eval $save_backup
-                    else
-                        eval $pad_spaces
-                    fi
+                    eval $pad_spaces
                 fi
             done
-        else 
+        elif (( "$line1" == "$line2" )); then
+            continue
+        else
             break
         fi 
     done
-    line2=$( (eval "awk 'END{print NR}' $file" ) )
-    for ((i=line1;i<=line2;i++)); do
-        column=$( (eval $find_column) )
-        if (("$column" > "$max_column")); then
-            max_column=$column
-        fi
-    done
-    for ((i=line1;i<=line2;i++)); do
-        column=$( (eval $find_column) )
-        for ((j=column;j<max_column;j++)); do
-            eval $pad_spaces
-        done
-    done
-    #cat -n $file #TODO THE ONES DOWN HERE JUST TO DEBUG #
 done
-#cp backup/my_file.py .
