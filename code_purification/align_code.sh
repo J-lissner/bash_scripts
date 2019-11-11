@@ -45,8 +45,8 @@ fi
 ## commands which should be evaluated during the loops
 block_start='awk "NR>$line2 && /=/ && $negated_keywords { print NR; exit}" $file'
 block_end='awk "{ if( (NR>$line1) && (!/=/ || $keywords) ) { print NR; exit} }" $file'
-keywords='/^\s*for/ || /^\s*if/ || /^\s*while/ || /^\s*def/ || /^\s*#/ || /^\s*\%/ '
-negated_keywords='!/^\s*for/ && !/^\s*if/ && !/^\s*while/ && !/^\s*def/ && !/^\s*#/ && !/^\s*\%/ '
+keywords='/^\s*for[^a-zA-Z]/ || /^\s*if[^a-zA-Z]/ || /^\s*while[^a-zA-Z]/ || /^\s*def[^a-zA-Z]/ || /^\s*#/ || /^\s*\%/ '
+negated_keywords='!/^\s*for[^a-zA-Z]/ && !/^\s*if[^a-zA-Z]/ && !/^\s*while[^a-zA-Z]/ && !/^\s*def[^a-zA-Z]/ && !/^\s*#/ && !/^\s*\%/ '
 
 ## indentation level
 current_line='sed -n "$i s/\(\s*\).*/\1/p" $file'
@@ -58,7 +58,9 @@ pad_spaces='sed -i -e "$i s/=/$spaces=/" $file'
 pad='awk "BEGIN{\$$n_spaces=OFS=\" \";print}" '
 
 ## skip python like function calls
-function_call='awk "NR==$i && /.*\(.*=/ && !/^[^(]*=.*\(/ { print NR; exit}" $file'
+function_call='awk "NR==$i && /^[^=]*\(.*=/ { print NR; exit}" $file'
+# depecrated and mb buggy
+#function_call='awk "NR==$i && /.*\(.*=/ && !/^[^(]*=.*\(/ { print NR; exit}" $file'
 
 ## skip incrementation etc
 increment='awk "{ if( (NR==$i) && (/\+=/ || $incr_keywords) ) { print NR; exit} }" $file'
@@ -124,6 +126,7 @@ for file in $@; do
                     eval $pad_spaces
                 fi
             done
+            echo "detected block: lines $line1 - $line2"
         elif (( "$line1" == "$line2" )); then
             continue
         else
