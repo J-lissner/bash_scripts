@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export TEXINPUTS=.:.//.:$TEXINPUTS
-export TEXINPUTS=/scratch/lissner/lehre/WS_2019/data_processing/computer_lab/template/:$TEXINPUTS
+#export TEXINPUTS=/scratch/lissner/lehre/data_processing/WS_19/computer_lab/tex_template/:$TEXINPUTS #required for dapro lab
 
 rm=true
 for args in "$@"; do
