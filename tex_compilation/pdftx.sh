@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-# pdflatex not compatible to pdftex
 export TEXINPUTS=.:.//.:$TEXINPUTS
+#export TEXINPUTS=/scratch/lissner/lehre/data_processing/WS_19/computer_lab/tex_template/:$TEXINPUTS #required for dapro lab
 
 rm=true
-# go through the user options
 for args in "$@"; do
     case "$1" in 
         -k | --keep) # keep the tex debugging files
@@ -25,29 +24,20 @@ for args in "$@"; do
         echo "With specified input: only the given files are compiled."
         echo
         echo "All subdirectories of the current folder are added in the \$TEXINPUTS -> figures in subfolders will be detected without path specification"
-        echo "Compiles each file with pdflatex -> bibtex -> pdflatex -> pdflatex"
+        echo "Compiles each file with xelatex "
         exit
     esac
 done
 
+# xelatex compiler is not compatible to EPS, replace all graphics with pdf files
 
 if [ -z "$1" ]; then
     for file in *.tex; do
-    	fname=${file/.tex/} 
     	pdflatex "$file" || continue
-    	biber "$fname"
-    	pdflatex "$file" 
-    	pdflatex "$file" 
-    
-    
     done
 else
     for file in "$@"; do
-    	fname=${file/.tex/} 
     	pdflatex "$file" || continue
-    	biber "$fname"
-    	pdflatex "$file" 
-    	pdflatex "$file" 
     done
 fi
 

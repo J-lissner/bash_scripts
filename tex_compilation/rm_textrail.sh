@@ -33,3 +33,5 @@ rm -f *.blg
 rm -f *.lot
 rm -f *.lof
 rm -f *.vrb
+rm -f *.bcf
+rm -f *.run.xml
