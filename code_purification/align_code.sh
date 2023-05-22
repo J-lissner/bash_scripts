@@ -18,6 +18,7 @@ for args in "$@"; do
         echo "  -h  --help,     no need to explain, you're already here"
         echo
         echo "This script aligns every '=' sign of a 'block' to the same identation level by padding spaces"
+        echo "It also pads any assignment, i.e. 'my_var=5' will become 'my_var = 5'"
         echo "Every 'block' is marked by empty lines, or keywords like 'for', 'if', 'while', 'def' or indentation"
         echo "For every line it has to indent, the file is overwritte, so the script might be slow for many lines"
         echo "Skips identation for python like function calls containing '=' symbols, e.g. fun.call(arg=10) "
@@ -25,7 +26,7 @@ for args in "$@"; do
         echo 
         echo "Current version works fine for almost all python and matlab scripts (11.11.19)"
         echo "Note that the version is still not perfect, it skips over '+=' instead of moving both"
-        echo "NOTE, there will be another script released soon, which pads '=' symbols correclty"
+        echo "Also note that kwargs passed with spaces e.g. 'kwarg =5' will also be padded to 'kwarg = 5'"
         exit
     esac
 done
@@ -45,8 +46,8 @@ fi
 ## commands which should be evaluated during the loops
 block_start='awk "NR>$line2 && /=/ && $negated_keywords { print NR; exit}" $file'
 block_end='awk "{ if( (NR>$line1) && (!/=/ || $keywords) ) { print NR; exit} }" $file'
-keywords='         /^\s*for[^a-zA-Z]/ ||  /^\s*if[^a-zA-Z]/ ||  /^\s*while[^a-zA-Z]/ ||  /^\s*def[^a-zA-Z]/ ||  /^\s*#/ ||  /^\s*\%/ ||  /^\s*with/ '
-negated_keywords='!/^\s*for[^a-zA-Z]/ && !/^\s*if[^a-zA-Z]/ && !/^\s*while[^a-zA-Z]/ && !/^\s*def[^a-zA-Z]/ && !/^\s*#/ && !/^\s*\%/ && !/^\s*with/  '
+keywords='         /^\s*for[^a-zA-Z]/ ||  /^\s*if[^a-zA-Z]/ ||  /^\s*while[^a-zA-Z]/ ||  /^\s*def[^a-zA-Z]/ ||  /^\s*#/ ||  /^\s*\%/ ||  /^\s*with/ ||  /^\s*try/ ||  /^\s*except/'
+negated_keywords='!/^\s*for[^a-zA-Z]/ && !/^\s*if[^a-zA-Z]/ && !/^\s*while[^a-zA-Z]/ && !/^\s*def[^a-zA-Z]/ && !/^\s*#/ && !/^\s*\%/ && !/^\s*with/ && !/^\s*try/ && !/^\s*except/'
 
 ## indentation level
 current_line='sed -n "$i s/\(\s*\).*/\1/p" $file'
@@ -55,6 +56,7 @@ base_line='sed -n "$i s/\(\s*\).*/\1/p" $file'
 ## padding with zeros
 find_column='sed -n "$i s/./&\\n/gp" $file | grep -nx -m 1  "=" | cut -d: -f1'
 pad_spaces='sed -i -e "$i s/=/$spaces=/" $file'
+correction='sed -i -e "s/\([+<=>*/-]\) \+=/\1=/g" $file'
 pad='awk "BEGIN{\$$n_spaces=OFS=\" \";print}" '
 
 ## skip python like function calls
@@ -68,6 +70,11 @@ incr_keywords=' /\*=/ || /-=/ || /\/=/ '
 #preallocating
 for file in $@; do
     echo "Manipulating file: '$file'"
+    #reset all padded = symbols, then fix the condition statements +=, ==, !=, <=, etc.
+    sed -i -e 's/\s\+=\s*/ = /g ;s/\s*=\s\+/ = /g' $file
+    #sed -i -e 's/\(\<if\>.*[=!]\)\s*=/\1=/g' $file
+    #sed -i -e 's/\(\<while\>.*[=!]\)\s*=/\1=/g' $file
+    sed -i -e 's/\([+-/*<>!=]\)\s\+=/\1=/g' $file
     line2=$(( 0 ))
     while true; do
         line1=$( eval $block_start  )
@@ -132,4 +139,5 @@ for file in $@; do
             break
         fi 
     done
+    eval $correction 
 done
