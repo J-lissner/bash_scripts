@@ -28,5 +28,3 @@ done
 ```
 - then you can execute all the scripts in each subfolder wherever you are
  
- 
-For feedback or ideas contact "lissner@mechbau.uni-stuttgart.de"
